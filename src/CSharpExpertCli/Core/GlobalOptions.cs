@@ -1,0 +1,53 @@
+using System.CommandLine;
+
+namespace CSharpExpertCli.Core;
+
+/// <summary>
+/// Output format for command results.
+/// </summary>
+public enum OutputFormat
+{
+    Json,
+    Text,
+    Markdown
+}
+
+/// <summary>
+/// Global command-line options shared across all commands.
+/// </summary>
+public static class GlobalOptions
+{
+    /// <summary>
+    /// Path to the .sln file to analyze.
+    /// </summary>
+    public static readonly Option<string?> SolutionOption = new(
+        aliases: ["--solution", "-s"],
+        description: "Path to the .sln file"
+    );
+
+    /// <summary>
+    /// Path to a .csproj file (alternative to solution).
+    /// </summary>
+    public static readonly Option<string?> ProjectOption = new(
+        aliases: ["--project", "-p"],
+        description: "Path to a .csproj file (alternative to solution)"
+    );
+
+    /// <summary>
+    /// Output format for results.
+    /// </summary>
+    public static readonly Option<OutputFormat> OutputOption = new(
+        aliases: ["--output", "-o"],
+        getDefaultValue: () => OutputFormat.Json,
+        description: "Output format: json, text, or markdown"
+    );
+
+    /// <summary>
+    /// Enable verbose logging.
+    /// </summary>
+    public static readonly Option<bool> VerboseOption = new(
+        aliases: ["--verbose", "-v"],
+        getDefaultValue: () => false,
+        description: "Enable verbose logging"
+    );
+}
