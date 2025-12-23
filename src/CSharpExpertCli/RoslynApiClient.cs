@@ -29,10 +29,10 @@ public class RoslynApiClient : IAsyncDisposable
         _workspace = MSBuildWorkspace.Create();
 
         // Subscribe to workspace failures for diagnostics
-        _workspace.WorkspaceFailed += (sender, args) =>
+        _workspace.RegisterWorkspaceFailedHandler((args) =>
         {
             Console.WriteLine($"[Workspace] Failed: {args.Diagnostic.Message}");
-        };
+        });
 
         Console.WriteLine($"[RoslynApi] Loading solution: {solutionPath}");
         _solution = await _workspace.OpenSolutionAsync(solutionPath);
@@ -143,11 +143,15 @@ public class RoslynApiClient : IAsyncDisposable
             foreach (var documentId in projectChanges.GetChangedDocuments())
             {
                 changedDocuments++;
-                var oldDocument = _solution.GetDocument(documentId)!;
-                var newDocument = newSolution.GetDocument(documentId)!;
+                var oldDocument = _solution!.GetDocument(documentId);
+                var newDocument = newSolution.GetDocument(documentId);
+
+                if (newDocument == null) continue;
 
                 var newText = await newDocument.GetTextAsync();
-                var filePath = newDocument.FilePath!;
+                var filePath = newDocument.FilePath;
+
+                if (filePath == null) continue;
 
                 Console.WriteLine($"[RoslynApi]   Writing: {Path.GetFileName(filePath)}");
                 await File.WriteAllTextAsync(filePath, newText.ToString());
@@ -169,8 +173,11 @@ public class RoslynApiClient : IAsyncDisposable
             foreach (var documentId in projectChanges.GetRemovedDocuments())
             {
                 changedDocuments++;
-                var oldDocument = _solution.GetDocument(documentId)!;
-                var filePath = oldDocument.FilePath!;
+                var oldDocument = _solution!.GetDocument(documentId);
+                if (oldDocument == null) continue;
+
+                var filePath = oldDocument.FilePath;
+                if (filePath == null) continue;
 
                 Console.WriteLine($"[RoslynApi]   Deleting: {Path.GetFileName(filePath)}");
                 File.Delete(filePath);
