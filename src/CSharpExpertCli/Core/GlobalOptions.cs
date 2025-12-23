@@ -19,18 +19,20 @@ public static class GlobalOptions
 {
     /// <summary>
     /// Path to the .sln file to analyze.
+    /// Optional - if not specified, will auto-discover in current directory.
     /// </summary>
     public static readonly Option<string?> SolutionOption = new(
         aliases: ["--solution", "-s"],
-        description: "Path to the .sln file"
+        description: "Path to the .sln file (optional - auto-discovers if not specified)"
     );
 
     /// <summary>
     /// Path to a .csproj file (alternative to solution).
+    /// Optional - if not specified, will auto-discover in current directory.
     /// </summary>
     public static readonly Option<string?> ProjectOption = new(
         aliases: ["--project", "-p"],
-        description: "Path to a .csproj file (alternative to solution)"
+        description: "Path to a .csproj file (optional - auto-discovers if not specified)"
     );
 
     /// <summary>

@@ -360,11 +360,12 @@ echo "=== Impact Assessment ==="
 ./scripts/CSharpExpertCli -s MySolution.sln find-references OldClassName --type class | \
   jq '{totalReferences, affectedFiles: [.references[].file] | unique | length}'
 
-# 2. Preview all changes
+# 2. Preview all changes (including file rename)
 echo -e "\n=== Preview Changes ==="
 ./scripts/CSharpExpertCli -s MySolution.sln rename OldClassName NewClassName \
   --type class \
   --preview \
+  --rename-file \
   -o text > rename-preview.txt
 
 # Review the preview file
@@ -378,7 +379,7 @@ less rename-preview.txt
 git add -A
 git commit -m "Backup before renaming OldClassName to NewClassName"
 
-# 2. Apply rename
+# 2. Apply rename (IMPORTANT: use --rename-file for classes to rename the source file too)
 echo "Applying rename..."
 ./scripts/CSharpExpertCli -s MySolution.sln rename OldClassName NewClassName \
   --type class \
@@ -396,6 +397,8 @@ else
     echo "Consider: git reset --hard HEAD~1 to rollback"
 fi
 ```
+
+**IMPORTANT:** When renaming classes, interfaces, or other types, always use `--rename-file` to ensure the source file is renamed to match the type name. This follows C# naming conventions where the file name matches the primary type name.
 
 ---
 

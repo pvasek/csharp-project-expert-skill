@@ -29,10 +29,12 @@ dotnet run -- [command] [options]
 
 ### Global Options
 
-- `--solution, -s <path>` - Path to .sln file (required for most commands)
-- `--project, -p <path>` - Path to .csproj file (alternative to solution)
+- `--solution, -s <path>` - Path to .sln file (optional - auto-discovers if not specified)
+- `--project, -p <path>` - Path to .csproj file (alternative to solution, also auto-discovers)
 - `--output, -o <format>` - Output format: json, text, or markdown (default: json)
 - `--verbose, -v` - Enable verbose logging
+
+**Auto-Discovery:** If you don't specify `-s` or `-p`, the tool automatically searches the current directory for a `.sln` file (preferred) or `.csproj` file. Perfect for running commands from your project root!
 
 ## Commands
 

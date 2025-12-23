@@ -33,8 +33,10 @@ Compiler-accurate semantic analysis for C# using Roslyn APIs. **Not text search*
 ## Command Syntax
 
 ```
-<cli-path> -s <solution.sln> [-o json|text|markdown] <command> [options]
+<cli-path> [-s <solution.sln> | -p <project.csproj>] [-o json|text|markdown] <command> [options]
 ```
+
+**Auto-Discovery:** If `-s` or `-p` is not specified, the tool automatically searches the current directory for a `.sln` file (preferred) or `.csproj` file.
 
 ## All Commands (18)
 
@@ -65,7 +67,8 @@ Compiler-accurate semantic analysis for C# using Roslyn APIs. **Not text search*
 1. Check usage: `find-references OldName --type method`
 2. Preview changes (REQUIRED): `rename OldName NewName --type method --preview`
 3. Apply: `rename OldName NewName --type method`
-4. Verify: `diagnostics --severity error`
+4. **When renaming classes/types**: Add `--rename-file` to also rename the file
+5. Verify: `diagnostics --severity error`
 
 ### Understand Unknown Code
 1. What is it? `find-definition ClassName --type class`

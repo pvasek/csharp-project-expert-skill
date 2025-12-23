@@ -33,6 +33,7 @@ public class CommandContext : IAsyncDisposable
 
     /// <summary>
     /// Gets the loaded solution, loading it if necessary.
+    /// If no solution or project path is specified, attempts to auto-discover in the current directory.
     /// </summary>
     public async Task<Solution> GetSolutionAsync()
     {
@@ -41,12 +42,27 @@ public class CommandContext : IAsyncDisposable
             return _loadedSolution;
         }
 
-        if (string.IsNullOrEmpty(SolutionPath) && string.IsNullOrEmpty(ProjectPath))
-        {
-            throw new InvalidOperationException("Either --solution or --project must be specified");
-        }
+        string? path = SolutionPath ?? ProjectPath;
 
-        var path = SolutionPath ?? ProjectPath!;
+        // If no path specified, try to auto-discover
+        if (string.IsNullOrEmpty(path))
+        {
+            LogVerbose("No solution or project specified, attempting auto-discovery...");
+
+            path = SolutionDiscovery.FindSolutionOrProject();
+
+            if (string.IsNullOrEmpty(path))
+            {
+                var currentDir = Directory.GetCurrentDirectory();
+                var message = SolutionDiscovery.GetDiscoveryMessage(currentDir);
+                throw new InvalidOperationException(message);
+            }
+
+            if (Verbose)
+            {
+                Console.Error.WriteLine($"Auto-discovered: {path}");
+            }
+        }
 
         if (Verbose)
         {

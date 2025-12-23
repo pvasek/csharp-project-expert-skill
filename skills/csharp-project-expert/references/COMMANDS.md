@@ -16,10 +16,21 @@ This document provides detailed reference for all 18 commands in the C# Project 
 
 All commands support these global options:
 
-- `--solution, -s <path>` - Path to .sln file (required for most commands)
-- `--project, -p <path>` - Path to .csproj file (alternative to solution)
+- `--solution, -s <path>` - Path to .sln file (optional - auto-discovers if not specified)
+- `--project, -p <path>` - Path to .csproj file (alternative to solution, also auto-discovers)
 - `--output, -o <format>` - Output format: `json`, `text`, or `markdown` (default: json)
 - `--verbose, -v` - Enable verbose logging
+
+### Auto-Discovery
+
+If neither `--solution` nor `--project` is specified, the tool automatically searches the **current directory** for:
+1. **First priority**: `.sln` files (if exactly one is found, it's used)
+2. **Second priority**: `.csproj` files (if no .sln found and exactly one .csproj exists)
+
+**Error cases**:
+- Multiple `.sln` files found → Error (you must specify which one with `-s`)
+- Multiple `.csproj` files found (and no .sln) → Error (you must specify which one with `-p`)
+- No `.sln` or `.csproj` files found → Error
 
 ---
 
@@ -41,16 +52,16 @@ Find where a symbol (class, method, property, etc.) is defined.
 
 **Examples:**
 ```bash
-# Find a class
-./scripts/CSharpExpertCli -s MySolution.sln find-definition UserService --type class
+# Find a class (auto-discovers solution in current directory)
+./scripts/CSharpExpertCli find-definition UserService --type class
 
-# Find a method in a specific namespace
+# Find a method in a specific namespace (explicit solution path)
 ./scripts/CSharpExpertCli -s MySolution.sln find-definition GetById \
   --type method \
   --in-namespace MyApp.Services
 
 # Find a property in a specific file
-./scripts/CSharpExpertCli -s MySolution.sln find-definition UserId \
+./scripts/CSharpExpertCli find-definition UserId \
   --type property \
   --in-file src/Models/User.cs
 ```
@@ -137,7 +148,9 @@ Safely rename a symbol across the entire solution with preview mode.
 - `--type, -t <type>` - Type of symbol being renamed
 - `--in-namespace, -n <namespace>` - Limit scope to namespace
 - `--preview` - Show changes without applying them (RECOMMENDED)
-- `--rename-file` - Also rename the file if renaming a type
+- `--rename-file` - Also rename the file if renaming a type (REQUIRED for classes/interfaces/types)
+
+**IMPORTANT:** When renaming classes, interfaces, or other types, ALWAYS use `--rename-file` to ensure the source file is renamed to match C# naming conventions (file name = type name).
 
 **Examples:**
 ```bash
