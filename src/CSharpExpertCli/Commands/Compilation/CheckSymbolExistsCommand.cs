@@ -46,13 +46,15 @@ public class CheckSymbolExistsCommand : ICommandHandler
         command.AddOption(inNamespaceOption);
 
         // Handler
-        command.SetHandler(async (symbolName, type, inNamespace) =>
+        command.SetHandler(async (symbolName, type, inNamespace, solution, project, output, verbose) =>
         {
+            context.InitializeFromGlobalOptions(solution, project, output, verbose);
+
             try
             {
                 var result = await ExecuteAsync(context, symbolName, type, inNamespace);
-                var output = context.Formatter.Format(result, context.OutputFormat);
-                Console.WriteLine(output);
+                var formattedOutput = context.Formatter.Format(result, context.OutputFormat);
+                Console.WriteLine(formattedOutput);
 
                 // Exit with NotFound if symbol doesn't exist
                 Environment.Exit(result.Exists ? ExitCodes.Success : ExitCodes.NotFound);
@@ -66,7 +68,8 @@ public class CheckSymbolExistsCommand : ICommandHandler
                 }
                 Environment.Exit(ExitCodes.Error);
             }
-        }, symbolArg, typeOption, inNamespaceOption);
+        }, symbolArg, typeOption, inNamespaceOption,
+           GlobalOptions.SolutionOption, GlobalOptions.ProjectOption, GlobalOptions.OutputOption, GlobalOptions.VerboseOption);
 
         return command;
     }

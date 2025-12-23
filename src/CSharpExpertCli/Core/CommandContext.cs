@@ -1,4 +1,6 @@
 using Microsoft.CodeAnalysis;
+using System.CommandLine;
+using System.CommandLine.Invocation;
 
 namespace CSharpExpertCli.Core;
 
@@ -64,6 +66,18 @@ public class CommandContext : IAsyncDisposable
         {
             Console.Error.WriteLine($"[Verbose] {message}");
         }
+    }
+
+    /// <summary>
+    /// Initializes the context with global options from the command invocation.
+    /// Call this at the start of every command handler.
+    /// </summary>
+    public void InitializeFromGlobalOptions(string? solution, string? project, OutputFormat output, bool verbose)
+    {
+        SolutionPath = solution;
+        ProjectPath = project;
+        OutputFormat = output;
+        Verbose = verbose;
     }
 
     public async ValueTask DisposeAsync()

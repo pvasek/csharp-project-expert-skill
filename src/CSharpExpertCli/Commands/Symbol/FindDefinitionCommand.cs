@@ -40,8 +40,10 @@ public class FindDefinitionCommand : ICommandHandler
         command.AddOption(inNamespaceOption);
 
         // Handler
-        command.SetHandler(async (symbolName, type, inFile, inNamespace) =>
+        command.SetHandler(async (symbolName, type, inFile, inNamespace, solution, project, output, verbose) =>
         {
+            context.InitializeFromGlobalOptions(solution, project, output, verbose);
+
             try
             {
                 var result = await ExecuteAsync(context, symbolName, type, inFile, inNamespace);
@@ -52,8 +54,8 @@ public class FindDefinitionCommand : ICommandHandler
                     Environment.Exit(ExitCodes.NotFound);
                 }
 
-                var output = context.Formatter.Format(result, context.OutputFormat);
-                Console.WriteLine(output);
+                var outputText = context.Formatter.Format(result, context.OutputFormat);
+                Console.WriteLine(outputText);
                 Environment.Exit(ExitCodes.Success);
             }
             catch (Exception ex)
@@ -65,7 +67,8 @@ public class FindDefinitionCommand : ICommandHandler
                 }
                 Environment.Exit(ExitCodes.Error);
             }
-        }, symbolArg, typeOption, inFileOption, inNamespaceOption);
+        }, symbolArg, typeOption, inFileOption, inNamespaceOption,
+           GlobalOptions.SolutionOption, GlobalOptions.ProjectOption, GlobalOptions.OutputOption, GlobalOptions.VerboseOption);
 
         return command;
     }

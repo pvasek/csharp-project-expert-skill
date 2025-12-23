@@ -23,8 +23,10 @@ public class FindImplementationsCommand : ICommandHandler
         command.AddArgument(symbolArg);
 
         // Handler
-        command.SetHandler(async (symbolName) =>
+        command.SetHandler(async (symbolName, solution, project, output, verbose) =>
         {
+            context.InitializeFromGlobalOptions(solution, project, output, verbose);
+
             try
             {
                 var result = await ExecuteAsync(context, symbolName);
@@ -35,8 +37,8 @@ public class FindImplementationsCommand : ICommandHandler
                     Environment.Exit(ExitCodes.NotFound);
                 }
 
-                var output = context.Formatter.Format(result, context.OutputFormat);
-                Console.WriteLine(output);
+                var formattedOutput = context.Formatter.Format(result, context.OutputFormat);
+                Console.WriteLine(formattedOutput);
                 Environment.Exit(ExitCodes.Success);
             }
             catch (Exception ex)
@@ -48,7 +50,8 @@ public class FindImplementationsCommand : ICommandHandler
                 }
                 Environment.Exit(ExitCodes.Error);
             }
-        }, symbolArg);
+        }, symbolArg,
+           GlobalOptions.SolutionOption, GlobalOptions.ProjectOption, GlobalOptions.OutputOption, GlobalOptions.VerboseOption);
 
         return command;
     }

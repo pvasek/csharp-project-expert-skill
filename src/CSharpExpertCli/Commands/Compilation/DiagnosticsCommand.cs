@@ -35,13 +35,15 @@ public class DiagnosticsCommand : ICommandHandler
         command.AddOption(codeOption);
 
         // Handler
-        command.SetHandler(async (severity, file, code) =>
+        command.SetHandler(async (severity, file, code, solution, project, output, verbose) =>
         {
+            context.InitializeFromGlobalOptions(solution, project, output, verbose);
+
             try
             {
                 var result = await ExecuteAsync(context, severity, file, code);
-                var output = context.Formatter.Format(result, context.OutputFormat);
-                Console.WriteLine(output);
+                var formattedOutput = context.Formatter.Format(result, context.OutputFormat);
+                Console.WriteLine(formattedOutput);
                 Environment.Exit(ExitCodes.Success);
             }
             catch (Exception ex)
@@ -53,7 +55,8 @@ public class DiagnosticsCommand : ICommandHandler
                 }
                 Environment.Exit(ExitCodes.Error);
             }
-        }, severityOption, fileOption, codeOption);
+        }, severityOption, fileOption, codeOption,
+           GlobalOptions.SolutionOption, GlobalOptions.ProjectOption, GlobalOptions.OutputOption, GlobalOptions.VerboseOption);
 
         return command;
     }

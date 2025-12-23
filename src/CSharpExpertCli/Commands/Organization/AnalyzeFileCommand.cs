@@ -17,8 +17,10 @@ public class AnalyzeFileCommand : ICommandHandler
         var filePathArg = new Argument<string>("file-path", "Path to the file");
         command.AddArgument(filePathArg);
 
-        command.SetHandler(async (filePath) =>
+        command.SetHandler(async (filePath, solution, project, output, verbose) =>
         {
+            context.InitializeFromGlobalOptions(solution, project, output, verbose);
+
             try
             {
                 var result = await ExecuteAsync(context, filePath);
@@ -31,7 +33,8 @@ public class AnalyzeFileCommand : ICommandHandler
                 if (context.Verbose) await Console.Error.WriteLineAsync(ex.StackTrace);
                 Environment.Exit(ExitCodes.Error);
             }
-        }, filePathArg);
+        }, filePathArg,
+           GlobalOptions.SolutionOption, GlobalOptions.ProjectOption, GlobalOptions.OutputOption, GlobalOptions.VerboseOption);
 
         return command;
     }

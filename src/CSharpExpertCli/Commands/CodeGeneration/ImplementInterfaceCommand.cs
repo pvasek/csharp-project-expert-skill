@@ -16,8 +16,10 @@ public class ImplementInterfaceCommand : ICommandHandler
         var interfaceNameArg = new Argument<string>("interface-name", "Name of the interface");
         command.AddArgument(interfaceNameArg);
 
-        command.SetHandler(async (interfaceName) =>
+        command.SetHandler(async (interfaceName, solution, project, output, verbose) =>
         {
+            context.InitializeFromGlobalOptions(solution, project, output, verbose);
+
             try
             {
                 var result = await ExecuteAsync(context, interfaceName);
@@ -35,7 +37,8 @@ public class ImplementInterfaceCommand : ICommandHandler
                 if (context.Verbose) await Console.Error.WriteLineAsync(ex.StackTrace);
                 Environment.Exit(ExitCodes.Error);
             }
-        }, interfaceNameArg);
+        }, interfaceNameArg,
+           GlobalOptions.SolutionOption, GlobalOptions.ProjectOption, GlobalOptions.OutputOption, GlobalOptions.VerboseOption);
 
         return command;
     }

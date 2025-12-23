@@ -27,15 +27,6 @@ class Program
         // Create command context
         await using var context = new CommandContext();
 
-        // Setup handler to capture global options
-        rootCommand.SetHandler((string? solution, string? project, OutputFormat output, bool verbose) =>
-        {
-            context.SolutionPath = solution;
-            context.ProjectPath = project;
-            context.OutputFormat = output;
-            context.Verbose = verbose;
-        }, GlobalOptions.SolutionOption, GlobalOptions.ProjectOption, GlobalOptions.OutputOption, GlobalOptions.VerboseOption);
-
         // Register all 18 commands
         var commandHandlers = new ICommandHandler[]
         {

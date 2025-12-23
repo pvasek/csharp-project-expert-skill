@@ -16,8 +16,10 @@ public class GenerateInterfaceCommand : ICommandHandler
         var classNameArg = new Argument<string>("class-name", "Name of the class");
         command.AddArgument(classNameArg);
 
-        command.SetHandler(async (className) =>
+        command.SetHandler(async (className, solution, project, output, verbose) =>
         {
+            context.InitializeFromGlobalOptions(solution, project, output, verbose);
+
             try
             {
                 var result = await ExecuteAsync(context, className);
@@ -35,7 +37,8 @@ public class GenerateInterfaceCommand : ICommandHandler
                 if (context.Verbose) await Console.Error.WriteLineAsync(ex.StackTrace);
                 Environment.Exit(ExitCodes.Error);
             }
-        }, classNameArg);
+        }, classNameArg,
+           GlobalOptions.SolutionOption, GlobalOptions.ProjectOption, GlobalOptions.OutputOption, GlobalOptions.VerboseOption);
 
         return command;
     }

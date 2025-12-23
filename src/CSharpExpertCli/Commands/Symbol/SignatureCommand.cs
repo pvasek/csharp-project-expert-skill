@@ -42,8 +42,10 @@ public class SignatureCommand : ICommandHandler
         command.AddOption(includeDocsOption);
 
         // Handler
-        command.SetHandler(async (symbolName, type, includeOverloads, includeDocs) =>
+        command.SetHandler(async (symbolName, type, includeOverloads, includeDocs, solution, project, output, verbose) =>
         {
+            context.InitializeFromGlobalOptions(solution, project, output, verbose);
+
             try
             {
                 var result = await ExecuteAsync(context, symbolName, type, includeOverloads, includeDocs);
@@ -54,8 +56,8 @@ public class SignatureCommand : ICommandHandler
                     Environment.Exit(ExitCodes.NotFound);
                 }
 
-                var output = context.Formatter.Format(result, context.OutputFormat);
-                Console.WriteLine(output);
+                var formattedOutput = context.Formatter.Format(result, context.OutputFormat);
+                Console.WriteLine(formattedOutput);
                 Environment.Exit(ExitCodes.Success);
             }
             catch (Exception ex)
@@ -67,7 +69,8 @@ public class SignatureCommand : ICommandHandler
                 }
                 Environment.Exit(ExitCodes.Error);
             }
-        }, symbolArg, typeOption, includeOverloadsOption, includeDocsOption);
+        }, symbolArg, typeOption, includeOverloadsOption, includeDocsOption,
+           GlobalOptions.SolutionOption, GlobalOptions.ProjectOption, GlobalOptions.OutputOption, GlobalOptions.VerboseOption);
 
         return command;
     }

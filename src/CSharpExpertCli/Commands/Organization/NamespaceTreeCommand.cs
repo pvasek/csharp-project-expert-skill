@@ -13,8 +13,10 @@ public class NamespaceTreeCommand : ICommandHandler
     {
         var command = new Command(Name, Description);
 
-        command.SetHandler(async () =>
+        command.SetHandler(async (solution, project, output, verbose) =>
         {
+            context.InitializeFromGlobalOptions(solution, project, output, verbose);
+
             try
             {
                 var result = await ExecuteAsync(context);
@@ -27,7 +29,8 @@ public class NamespaceTreeCommand : ICommandHandler
                 if (context.Verbose) await Console.Error.WriteLineAsync(ex.StackTrace);
                 Environment.Exit(ExitCodes.Error);
             }
-        });
+        },
+        GlobalOptions.SolutionOption, GlobalOptions.ProjectOption, GlobalOptions.OutputOption, GlobalOptions.VerboseOption);
 
         return command;
     }

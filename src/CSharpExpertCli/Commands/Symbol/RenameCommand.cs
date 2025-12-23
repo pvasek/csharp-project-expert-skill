@@ -49,8 +49,21 @@ public class RenameCommand : ICommandHandler
         command.AddOption(renameFileOption);
 
         // Handler
-        command.SetHandler(async (oldName, newName, type, inNamespace, preview, renameFile) =>
+        command.SetHandler(async (invocationContext) =>
         {
+            var oldName = invocationContext.ParseResult.GetValueForArgument(oldNameArg);
+            var newName = invocationContext.ParseResult.GetValueForArgument(newNameArg);
+            var type = invocationContext.ParseResult.GetValueForOption(typeOption);
+            var inNamespace = invocationContext.ParseResult.GetValueForOption(inNamespaceOption);
+            var preview = invocationContext.ParseResult.GetValueForOption(previewOption);
+            var renameFile = invocationContext.ParseResult.GetValueForOption(renameFileOption);
+            var solution = invocationContext.ParseResult.GetValueForOption(GlobalOptions.SolutionOption);
+            var project = invocationContext.ParseResult.GetValueForOption(GlobalOptions.ProjectOption);
+            var output = invocationContext.ParseResult.GetValueForOption(GlobalOptions.OutputOption);
+            var verbose = invocationContext.ParseResult.GetValueForOption(GlobalOptions.VerboseOption);
+
+            context.InitializeFromGlobalOptions(solution, project, output, verbose);
+
             try
             {
                 var result = await ExecuteAsync(context, oldName, newName, type, inNamespace, preview, renameFile);
@@ -61,8 +74,8 @@ public class RenameCommand : ICommandHandler
                     Environment.Exit(ExitCodes.NotFound);
                 }
 
-                var output = context.Formatter.Format(result, context.OutputFormat);
-                Console.WriteLine(output);
+                var formattedOutput = context.Formatter.Format(result, context.OutputFormat);
+                Console.WriteLine(formattedOutput);
                 Environment.Exit(ExitCodes.Success);
             }
             catch (Exception ex)
@@ -74,7 +87,7 @@ public class RenameCommand : ICommandHandler
                 }
                 Environment.Exit(ExitCodes.Error);
             }
-        }, oldNameArg, newNameArg, typeOption, inNamespaceOption, previewOption, renameFileOption);
+        });
 
         return command;
     }

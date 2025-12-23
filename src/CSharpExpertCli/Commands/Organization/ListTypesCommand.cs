@@ -18,8 +18,10 @@ public class ListTypesCommand : ICommandHandler
         var namespaceOption = new Option<string?>("--namespace", "Filter by namespace");
         command.AddOption(namespaceOption);
 
-        command.SetHandler(async (namespaceFilter) =>
+        command.SetHandler(async (namespaceFilter, solution, project, output, verbose) =>
         {
+            context.InitializeFromGlobalOptions(solution, project, output, verbose);
+
             try
             {
                 var result = await ExecuteAsync(context, namespaceFilter);
@@ -32,7 +34,8 @@ public class ListTypesCommand : ICommandHandler
                 if (context.Verbose) await Console.Error.WriteLineAsync(ex.StackTrace);
                 Environment.Exit(ExitCodes.Error);
             }
-        }, namespaceOption);
+        }, namespaceOption,
+           GlobalOptions.SolutionOption, GlobalOptions.ProjectOption, GlobalOptions.OutputOption, GlobalOptions.VerboseOption);
 
         return command;
     }

@@ -16,8 +16,10 @@ public class DependenciesCommand : ICommandHandler
         var targetArg = new Argument<string>("target", "File path or type name");
         command.AddArgument(targetArg);
 
-        command.SetHandler(async (target) =>
+        command.SetHandler(async (target, solution, project, output, verbose) =>
         {
+            context.InitializeFromGlobalOptions(solution, project, output, verbose);
+
             try
             {
                 var result = await ExecuteAsync(context, target);
@@ -30,7 +32,8 @@ public class DependenciesCommand : ICommandHandler
                 if (context.Verbose) await Console.Error.WriteLineAsync(ex.StackTrace);
                 Environment.Exit(ExitCodes.Error);
             }
-        }, targetArg);
+        }, targetArg,
+           GlobalOptions.SolutionOption, GlobalOptions.ProjectOption, GlobalOptions.OutputOption, GlobalOptions.VerboseOption);
 
         return command;
     }

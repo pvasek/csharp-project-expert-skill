@@ -41,8 +41,10 @@ public class ListMembersCommand : ICommandHandler
         command.AddOption(includeInheritedOption);
 
         // Handler
-        command.SetHandler(async (typeName, kind, accessibility, includeInherited) =>
+        command.SetHandler(async (typeName, kind, accessibility, includeInherited, solution, project, output, verbose) =>
         {
+            context.InitializeFromGlobalOptions(solution, project, output, verbose);
+
             try
             {
                 var result = await ExecuteAsync(context, typeName, kind, accessibility, includeInherited);
@@ -53,8 +55,8 @@ public class ListMembersCommand : ICommandHandler
                     Environment.Exit(ExitCodes.NotFound);
                 }
 
-                var output = context.Formatter.Format(result, context.OutputFormat);
-                Console.WriteLine(output);
+                var formattedOutput = context.Formatter.Format(result, context.OutputFormat);
+                Console.WriteLine(formattedOutput);
                 Environment.Exit(ExitCodes.Success);
             }
             catch (Exception ex)
@@ -66,7 +68,8 @@ public class ListMembersCommand : ICommandHandler
                 }
                 Environment.Exit(ExitCodes.Error);
             }
-        }, typeNameArg, kindOption, accessibilityOption, includeInheritedOption);
+        }, typeNameArg, kindOption, accessibilityOption, includeInheritedOption,
+           GlobalOptions.SolutionOption, GlobalOptions.ProjectOption, GlobalOptions.OutputOption, GlobalOptions.VerboseOption);
 
         return command;
     }

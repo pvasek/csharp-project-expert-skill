@@ -14,7 +14,7 @@ A command-line tool for C# code analysis and refactoring using Roslyn APIs. Prov
 
 ```bash
 git clone <repository-url>
-cd csharp-skill/src/CSharpSkill
+cd csharp-skill
 dotnet build
 ```
 
@@ -349,7 +349,7 @@ The tool is built on three main components:
 2. **Command Handlers** - 18 command implementations using System.CommandLine
 3. **Output Formatters** - JSON/text/markdown output generation
 
-All source code is located in `src/CSharpSkill/`.
+All source code is located in `src/CSharpExpertCli/`.
 
 ## Technical Details
 
