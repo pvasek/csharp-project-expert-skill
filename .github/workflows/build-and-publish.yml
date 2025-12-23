@@ -77,22 +77,22 @@ jobs:
       - name: Copy skills folder and binaries to dist
         run: |
           # Copy this skill's folder (SKILL.md, references)
-          rm -rf dist/skills/csharp-expert
-          cp -r skills/csharp-expert dist/skills/
+          rm -rf dist/skills/csharp-project-expert
+          cp -r skills/csharp-project-expert dist/skills/
 
           # Create script directories and copy all published files
-          mkdir -p dist/skills/csharp-expert/scripts
+          mkdir -p dist/skills/csharp-project-expert/scripts
 
           # Copy entire publish directories for each runtime
-          cp -r artifacts/linux-x64 dist/skills/csharp-expert/scripts/
-          cp -r artifacts/osx-x64 dist/skills/csharp-expert/scripts/
-          cp -r artifacts/osx-arm64 dist/skills/csharp-expert/scripts/
-          cp -r artifacts/win-x64 dist/skills/csharp-expert/scripts/
+          cp -r artifacts/linux-x64 dist/skills/csharp-project-expert/scripts/
+          cp -r artifacts/osx-x64 dist/skills/csharp-project-expert/scripts/
+          cp -r artifacts/osx-arm64 dist/skills/csharp-project-expert/scripts/
+          cp -r artifacts/win-x64 dist/skills/csharp-project-expert/scripts/
 
           # Make unix binaries executable
-          chmod +x dist/skills/csharp-expert/scripts/linux-x64/csharp-skill
-          chmod +x dist/skills/csharp-expert/scripts/osx-x64/csharp-skill
-          chmod +x dist/skills/csharp-expert/scripts/osx-arm64/csharp-skill
+          chmod +x dist/skills/csharp-project-expert/scripts/linux-x64/csharp-skill
+          chmod +x dist/skills/csharp-project-expert/scripts/osx-x64/csharp-skill
+          chmod +x dist/skills/csharp-project-expert/scripts/osx-arm64/csharp-skill
 
       - name: Commit and push to dist repo
         run: |
