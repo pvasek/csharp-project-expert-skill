@@ -20,15 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        include:
-          - rid: linux-x64
-            artifact: csharp-skill
-          - rid: osx-x64
-            artifact: csharp-skill
-          - rid: osx-arm64
-            artifact: csharp-skill
-          - rid: win-x64
-            artifact: csharp-skill.exe
+        rid: [linux-x64, osx-x64, osx-arm64, win-x64]
 
     steps:
       - uses: actions/checkout@v4
@@ -46,13 +38,15 @@ jobs:
           dotnet publish ${{ env.PROJECT_PATH }} \
             -c Release \
             -r ${{ matrix.rid }} \
+            -p:PublishSingleFile=true \
+            --self-contained true \
             -o ./publish/${{ matrix.rid }}
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.rid }}
-          path: ./publish/${{ matrix.rid }}/${{ matrix.artifact }}
+          path: ./publish/${{ matrix.rid }}/
           retention-days: 1
 
   publish:
@@ -88,13 +82,14 @@ jobs:
           rm -rf dist/skills/csharp-expert
           cp -r skills/csharp-expert dist/skills/
 
-          # Create script directories and place built binaries
-          mkdir -p dist/skills/csharp-expert/scripts/{linux-x64,osx-x64,osx-arm64,win-x64}
+          # Create script directories and copy all published files
+          mkdir -p dist/skills/csharp-expert/scripts
 
-          cp artifacts/linux-x64/csharp-skill dist/skills/csharp-expert/scripts/linux-x64/
-          cp artifacts/osx-x64/csharp-skill dist/skills/csharp-expert/scripts/osx-x64/
-          cp artifacts/osx-arm64/csharp-skill dist/skills/csharp-expert/scripts/osx-arm64/
-          cp artifacts/win-x64/csharp-skill.exe dist/skills/csharp-expert/scripts/win-x64/
+          # Copy entire publish directories for each runtime
+          cp -r artifacts/linux-x64 dist/skills/csharp-expert/scripts/
+          cp -r artifacts/osx-x64 dist/skills/csharp-expert/scripts/
+          cp -r artifacts/osx-arm64 dist/skills/csharp-expert/scripts/
+          cp -r artifacts/win-x64 dist/skills/csharp-expert/scripts/
 
           # Make unix binaries executable
           chmod +x dist/skills/csharp-expert/scripts/linux-x64/csharp-skill
