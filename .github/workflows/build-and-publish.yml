@@ -1,0 +1,109 @@
+name: Build and Publish to Dist Repo
+
+on:
+  push:
+    tags: ['v*']
+
+env:
+  DOTNET_VERSION: '10.0.x'
+  PROJECT_PATH: 'src/CSharpExpertCli/CSharpExpertCli.csproj'
+  DIST_REPO: 'pvasek/claude-skills'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - rid: linux-x64
+            artifact: csharp-skill
+          - rid: osx-x64
+            artifact: csharp-skill
+          - rid: osx-arm64
+            artifact: csharp-skill
+          - rid: win-x64
+            artifact: csharp-skill.exe
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore dependencies
+        run: dotnet restore ${{ env.PROJECT_PATH }}
+
+      - name: Publish ${{ matrix.rid }}
+        run: |
+          dotnet publish ${{ env.PROJECT_PATH }} \
+            -c Release \
+            -r ${{ matrix.rid }} \
+            --self-contained true \
+            -p:PublishSingleFile=true \
+            -p:PublishTrimmed=true \
+            -p:EnableCompressionInSingleFile=true \
+            -o ./publish/${{ matrix.rid }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.rid }}
+          path: ./publish/${{ matrix.rid }}/${{ matrix.artifact }}
+          retention-days: 1
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Checkout dist repo
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ env.DIST_REPO }}
+          token: ${{ secrets.DIST_REPO_TOKEN }}
+          path: dist
+
+      - name: Determine version
+        id: version
+        run: echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      - name: Copy skills folder and binaries to dist
+        run: |
+          # Copy entire skills folder (SKILL.md, references)
+          rm -rf dist/skills
+          cp -r skills dist/
+
+          # Create script directories and place built binaries
+          mkdir -p dist/skills/csharp-expert/scripts/{linux-x64,osx-x64,osx-arm64,win-x64}
+
+          cp artifacts/linux-x64/csharp-skill dist/skills/csharp-expert/scripts/linux-x64/
+          cp artifacts/osx-x64/csharp-skill dist/skills/csharp-expert/scripts/osx-x64/
+          cp artifacts/osx-arm64/csharp-skill dist/skills/csharp-expert/scripts/osx-arm64/
+          cp artifacts/win-x64/csharp-skill.exe dist/skills/csharp-expert/scripts/win-x64/
+
+          # Make unix binaries executable
+          chmod +x dist/skills/csharp-expert/scripts/linux-x64/csharp-skill
+          chmod +x dist/skills/csharp-expert/scripts/osx-x64/csharp-skill
+          chmod +x dist/skills/csharp-expert/scripts/osx-arm64/csharp-skill
+
+          # Update version in plugin.json and marketplace.json
+          sed -i "s/\"version\": \".*\"/\"version\": \"${{ steps.version.outputs.version }}\"/" dist/.claude-plugin/plugin.json
+          sed -i "s/\"version\": \".*\"/\"version\": \"${{ steps.version.outputs.version }}\"/" dist/marketplace.json
+
+      - name: Commit and push to dist repo
+        run: |
+          cd dist
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Release ${{ steps.version.outputs.version }} from ${{ github.sha }}" || echo "No changes to commit"
+          git tag -f "v${{ steps.version.outputs.version }}"
+          git push origin main --tags --force

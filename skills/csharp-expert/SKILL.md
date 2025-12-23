@@ -1,16 +1,6 @@
 ---
 name: csharp-project-expert
-description: |
-  Expert C# project and solution analysis, navigation, and refactoring tool. Find symbol
-  definitions/references, safely rename across solutions, navigate type hierarchies, analyze
-  dependencies and call graphs, generate code, and check compilation errors. Understands C#
-  semantics and project structure. Replaces slow grep/text searches with precise, compiler-accurate
-  operations. Essential for refactoring, code quality, and understanding large C# projects.
-compatibility: |
-  Requires .NET 10.0 runtime. Works with C# solutions (.sln) or projects (.csproj).
-  Executable location: scripts/CSharpExpertCli (macOS/Linux) or scripts/CSharpExpertCli.exe (Windows).
-  All commands require --solution or --project path. Supports C# 1.0-12.0.
-license: MIT
+description: Analyze and refactor C# codebases using Roslyn. Use when working with .NET solutions, finding symbol definitions/references, safe renaming, diagnostics, type hierarchies, or generating interfaces.
 ---
 
 # C# Project Expert
