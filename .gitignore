@@ -68,3 +68,4 @@ nunit-*.xml
 *.vsix
 build/
 publish/
+.DS_Store
