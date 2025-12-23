@@ -2,6 +2,7 @@ name: Build and Publish to Dist Repo
 
 on:
   push:
+    branches: ['main']
     tags: ['v*']
   workflow_dispatch:
     inputs:
