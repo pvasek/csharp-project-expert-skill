@@ -67,3 +67,4 @@ nunit-*.xml
 # Built Visual Studio Code Extensions
 *.vsix
 build/
+publish/

@@ -336,7 +336,9 @@ csharp-skill -s MySolution.sln analyze-file src/Services/UserService.cs
 
 ## Requirements
 
-- .NET 10.0 SDK
+- **.NET 10.0 Runtime** - Required to run the tool
+  - Download: https://dotnet.microsoft.com/download/dotnet/10.0
+  - The binaries are framework-dependent and require .NET 10.0 to be installed
 - Solution or project file to analyze
 
 ## Architecture
