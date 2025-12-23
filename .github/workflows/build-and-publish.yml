@@ -3,6 +3,12 @@ name: Build and Publish to Dist Repo
 on:
   push:
     tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version number (e.g., 1.0.0)'
+        required: true
+        type: string
 
 env:
   DOTNET_VERSION: '10.0.x'
@@ -77,9 +83,9 @@ jobs:
 
       - name: Copy skills folder and binaries to dist
         run: |
-          # Copy entire skills folder (SKILL.md, references)
-          rm -rf dist/skills
-          cp -r skills dist/
+          # Copy this skill's folder (SKILL.md, references)
+          rm -rf dist/skills/csharp-expert
+          cp -r skills/csharp-expert dist/skills/
 
           # Create script directories and place built binaries
           mkdir -p dist/skills/csharp-expert/scripts/{linux-x64,osx-x64,osx-arm64,win-x64}
@@ -93,10 +99,6 @@ jobs:
           chmod +x dist/skills/csharp-expert/scripts/linux-x64/csharp-skill
           chmod +x dist/skills/csharp-expert/scripts/osx-x64/csharp-skill
           chmod +x dist/skills/csharp-expert/scripts/osx-arm64/csharp-skill
-
-          # Update version in plugin.json and marketplace.json
-          sed -i "s/\"version\": \".*\"/\"version\": \"${{ steps.version.outputs.version }}\"/" dist/.claude-plugin/plugin.json
-          sed -i "s/\"version\": \".*\"/\"version\": \"${{ steps.version.outputs.version }}\"/" dist/marketplace.json
 
       - name: Commit and push to dist repo
         run: |
