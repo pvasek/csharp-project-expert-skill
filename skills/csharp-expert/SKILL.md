@@ -1,418 +1,96 @@
 ---
 name: csharp-project-expert
-description: Analyze and refactor C# codebases using Roslyn. Use when working with .NET solutions, finding symbol definitions/references, safe renaming, diagnostics, type hierarchies, or generating interfaces.
+description: Roslyn-powered C# code analysis. Use for finding definitions/references, safe renaming, diagnostics, type hierarchies, call analysis, and code generation in .NET solutions.
 ---
 
 # C# Project Expert
 
-Expert code analysis and refactoring for C# projects using compiler-accurate semantic understanding.
+Compiler-accurate semantic analysis for C# using Roslyn APIs. **Not text search** - understands C# semantics.
 
-## Quick Start
+## When to Use
 
-Verify the tool is working:
+**Use this skill for:**
+- Finding symbol definitions (classes, methods, interfaces, properties)
+- Finding all references before refactoring
+- Safe renaming across entire solution (always preview first!)
+- Understanding method signatures and type hierarchies
+- Checking compilation errors/warnings
+- Finding interface implementations
+- Analyzing method call chains (callers/callees)
+- Finding unused code
 
-```bash
-./scripts/CSharpExpertCli --help
+**Don't use for:** Non-C# files, simple text/comment searches, projects without .sln/.csproj
+
+## CLI Path (Cross-Platform)
+
+| Platform | Path |
+|----------|------|
+| Linux x64 | `./scripts/linux-x64/csharp-skill` |
+| macOS x64 | `./scripts/osx-x64/csharp-skill` |
+| macOS ARM | `./scripts/osx-arm64/csharp-skill` |
+| Windows x64 | `./scripts/win-x64/csharp-skill.exe` |
+
+## Command Syntax
+
+```
+<cli-path> -s <solution.sln> [-o json|text|markdown] <command> [options]
 ```
 
-Try your first command:
-
-```bash
-# Find where a class is defined
-./scripts/CSharpExpertCli --solution /path/to/YourSolution.sln find-definition UserService --type class
-
-# Find all references to a method
-./scripts/CSharpExpertCli --solution /path/to/YourSolution.sln find-references GetById --type method
-```
-
-All commands support JSON, text, and markdown output via `--output` or `-o`:
-
-```bash
-./scripts/CSharpExpertCli -s MySolution.sln -o json find-definition UserService --type class
-```
-
-## When to Use This Skill
-
-**Use this skill when:**
-- Finding where C# symbols (classes, methods, interfaces) are defined
-- Finding all usages/references of a symbol before refactoring
-- Safely renaming symbols across an entire solution
-- Understanding method signatures, parameters, and return types
-- Checking for compilation errors before committing changes
-- Finding implementations of interfaces or abstract classes
-- Analyzing method call hierarchies (who calls what)
-- Exploring type members without reading entire files
-- Working with C# projects larger than 10 files
-- Need precise, compiler-accurate results vs. text search
-
-**Don't use this skill when:**
-- Working with non-C# files (JavaScript, Python, etc.)
-- Simple text searches in comments or strings
-- Project doesn't have .sln or .csproj file
-- .NET runtime not available in environment
-- Need to analyze code without compiling (tool requires buildable code)
-
-## Core Commands
-
-All commands follow this pattern:
-
-```bash
-./scripts/CSharpExpertCli --solution <path> [--output format] <command> [options] <arguments>
-```
-
-### Global Options
-
-- `--solution, -s <path>` - Path to .sln file (required)
-- `--project, -p <path>` - Path to .csproj file (alternative)
-- `--output, -o <format>` - Output format: `json`, `text`, or `markdown` (default: json)
-- `--verbose, -v` - Enable verbose logging
-
-### 1. find-definition
-
-Find where a symbol is defined (class, method, property, interface, etc.).
-
-```bash
-# Find a class
-./scripts/CSharpExpertCli -s MySolution.sln find-definition UserService --type class
-
-# Find a method in a specific namespace
-./scripts/CSharpExpertCli -s MySolution.sln find-definition GetById \
-  --type method \
-  --in-namespace MyApp.Services
-```
-
-**Options:**
-- `--type, -t` - Symbol type: `class`, `method`, `property`, `field`, `interface`, `enum`
-- `--in-file, -f` - Search only in specific file
-- `--in-namespace, -n` - Search only in specific namespace
-
-**Output (JSON):**
-```json
-{
-  "symbol": "UserService",
-  "kind": "class",
-  "location": {
-    "file": "src/Services/UserService.cs",
-    "line": 15,
-    "column": 18
-  },
-  "namespace": "MyApp.Services",
-  "accessibility": "public"
-}
-```
-
-### 2. find-references
-
-Find all usages of a symbol throughout the solution.
-
-```bash
-# Find all references to a method
-./scripts/CSharpExpertCli -s MySolution.sln find-references GetById --type method
-
-# Find all references to an interface
-./scripts/CSharpExpertCli -s MySolution.sln find-references IUserRepository --type interface
-```
-
-**Options:**
-- `--type, -t` - Symbol type to search for
-- `--in-namespace, -n` - Symbol namespace
-
-**Use case:** Critical before refactoring to understand impact.
-
-### 3. rename
-
-Safely rename a symbol across the entire solution with preview mode.
-
-```bash
-# Preview changes (don't apply)
-./scripts/CSharpExpertCli -s MySolution.sln rename UserService UserManager \
-  --type class \
-  --preview
-
-# Apply rename and update file name
-./scripts/CSharpExpertCli -s MySolution.sln rename UserService UserManager \
-  --type class \
-  --rename-file
-
-# Rename a method
-./scripts/CSharpExpertCli -s MySolution.sln rename GetById FindById --type method
-```
-
-**Options:**
-- `--type, -t` - Type of symbol being renamed
-- `--in-namespace, -n` - Limit scope to namespace
-- `--preview` - Show changes without applying them (recommended first step)
-- `--rename-file` - Also rename the file if renaming a type
-
-**Important:** Always use `--preview` first to see what will change!
-
-### 4. signature
-
-Get method/type signatures with parameters and return types.
-
-```bash
-# Get method signature with all overloads
-./scripts/CSharpExpertCli -s MySolution.sln signature GetById \
-  --type method \
-  --include-overloads
-
-# Get class signature
-./scripts/CSharpExpertCli -s MySolution.sln signature UserService --type class
-```
-
-**Options:**
-- `--type, -t` - Type of symbol
-- `--include-overloads` - Show all overloads for methods
-- `--include-docs` - Include XML documentation comments (default: true)
-
-### 5. diagnostics
-
-Check for compilation errors, warnings, and messages.
-
-```bash
-# Get all errors
-./scripts/CSharpExpertCli -s MySolution.sln diagnostics --severity error
-
-# Get diagnostics for specific file
-./scripts/CSharpExpertCli -s MySolution.sln diagnostics \
-  --file src/UserService.cs \
-  --severity warning
-
-# Filter by diagnostic code
-./scripts/CSharpExpertCli -s MySolution.sln diagnostics --code CS0246
-```
-
-**Options:**
-- `--severity, -s` - Filter by severity: `error`, `warning`, `info`
-- `--file, -f` - Get diagnostics only for specific file
-- `--code, -c` - Filter by diagnostic code (e.g., CS0246)
-
-**Use case:** Validate code quality before committing changes.
-
-### 6. find-implementations
-
-Find all classes that implement an interface or inherit from an abstract class.
-
-```bash
-# Find implementations of an interface
-./scripts/CSharpExpertCli -s MySolution.sln find-implementations IUserRepository
-
-# Find all IDisposable implementations
-./scripts/CSharpExpertCli -s MySolution.sln find-implementations IDisposable
-```
-
-**Use case:** Understand which classes implement a contract, useful for polymorphism analysis.
-
-### 7. find-callers
-
-Find all methods that call a specific method (who uses this?).
-
-```bash
-# Find what calls GetById
-./scripts/CSharpExpertCli -s MySolution.sln find-callers GetById
-
-# Find what calls ProcessOrder
-./scripts/CSharpExpertCli -s MySolution.sln find-callers ProcessOrder
-```
-
-**Use case:** Impact analysis - understand what will be affected by changes.
-
-### 8. list-members
-
-List all members (methods, properties, fields) of a type.
-
-```bash
-# List all members of a class
-./scripts/CSharpExpertCli -s MySolution.sln list-members UserService
-
-# List only public methods
-./scripts/CSharpExpertCli -s MySolution.sln list-members User \
-  --kind method \
-  --accessibility public
-```
-
-**Options:**
-- `--kind, -k` - Filter by member kind: `method`, `property`, `field`, `event`
-- `--accessibility, -a` - Filter by: `public`, `private`, `protected`, `internal`
-- `--include-inherited` - Include inherited members
-
-## Common Workflows
-
-### Workflow 1: Safe Refactoring
-
-When renaming a symbol:
-
-```bash
-# 1. Check current usage
-./scripts/CSharpExpertCli -s MySolution.sln find-references GetById --type method
-
-# 2. Preview rename to see what will change
-./scripts/CSharpExpertCli -s MySolution.sln rename GetById FindById \
-  --type method \
-  --preview
-
-# 3. Apply rename if preview looks good
-./scripts/CSharpExpertCli -s MySolution.sln rename GetById FindById --type method
-
-# 4. Verify no new errors
-./scripts/CSharpExpertCli -s MySolution.sln diagnostics --severity error
-```
-
-### Workflow 2: Understanding a Type
-
-When exploring an unfamiliar class:
-
-```bash
-# 1. Find where it's defined
-./scripts/CSharpExpertCli -s MySolution.sln find-definition UserService --type class
-
-# 2. See its members
-./scripts/CSharpExpertCli -s MySolution.sln list-members UserService
-
-# 3. Check inheritance
-./scripts/CSharpExpertCli -s MySolution.sln inheritance-tree UserService
-
-# 4. See what it depends on
-./scripts/CSharpExpertCli -s MySolution.sln dependencies UserService
-```
-
-### Workflow 3: Impact Analysis
-
-Before modifying a method:
-
-```bash
-# 1. Find who calls this method
-./scripts/CSharpExpertCli -s MySolution.sln find-callers ProcessOrder
-
-# 2. Find what this method calls
-./scripts/CSharpExpertCli -s MySolution.sln find-callees ProcessOrder
-
-# 3. Get the method signature
-./scripts/CSharpExpertCli -s MySolution.sln signature ProcessOrder \
-  --type method \
-  --include-docs
-```
-
-### Workflow 4: Code Quality Check
-
-Before committing:
-
-```bash
-# 1. Check for errors
-./scripts/CSharpExpertCli -s MySolution.sln diagnostics --severity error
-
-# 2. Check for warnings in changed files
-./scripts/CSharpExpertCli -s MySolution.sln diagnostics \
-  --file src/Services/UserService.cs \
-  --severity warning
-
-# 3. Find unused code (optional)
-./scripts/CSharpExpertCli -s MySolution.sln unused-code
-```
-
-## Command Syntax Patterns
-
-### Filtering by Symbol Type
-
-Most commands support `--type` to filter results:
-- `class` - Classes
-- `method` - Methods
-- `property` - Properties
-- `field` - Fields
-- `interface` - Interfaces
-- `enum` - Enums
-
-### Namespace Filtering
-
-Use `--in-namespace` to limit scope:
-
-```bash
-./scripts/CSharpExpertCli -s MySolution.sln find-definition GetUser \
-  --type method \
-  --in-namespace MyApp.Services
-```
-
-### File Filtering
-
-Use `--in-file` to search specific files:
-
-```bash
-./scripts/CSharpExpertCli -s MySolution.sln find-definition UserService \
-  --type class \
-  --in-file src/Services/UserService.cs
-```
+## All Commands (18)
+
+| Command | Purpose | Key Options |
+|---------|---------|-------------|
+| `find-definition <name>` | Where is symbol defined | `--type class|method|property|interface` |
+| `find-references <name>` | All usages of symbol | `--type`, `--in-namespace` |
+| `rename <old> <new>` | Rename across solution | `--preview` (use first!), `--type`, `--rename-file` |
+| `signature <name>` | Method/type signature | `--include-overloads`, `--include-docs` |
+| `list-members <type>` | Members of a type | `--kind method|property|field`, `--accessibility` |
+| `diagnostics` | Compilation errors/warnings | `--severity error|warning`, `--file`, `--code` |
+| `check-symbol-exists <name>` | Verify symbol exists | `--type` |
+| `find-implementations <name>` | Interface implementations | - |
+| `inheritance-tree <type>` | Type hierarchy | `--direction ancestors|descendants|both` |
+| `find-callers <method>` | Who calls this method | - |
+| `find-callees <method>` | What does method call | - |
+| `dependencies <target>` | Type/file dependencies | - |
+| `unused-code` | Find dead code | - |
+| `generate-interface <class>` | Extract interface | - |
+| `implement-interface <iface>` | Generate stubs | - |
+| `list-types` | Types in namespace/file | `--namespace` |
+| `namespace-tree` | Namespace hierarchy | - |
+| `analyze-file <path>` | Quick file analysis | - |
+
+## Critical Workflows
+
+### Safe Rename (Always Follow)
+1. Check usage: `find-references OldName --type method`
+2. Preview changes (REQUIRED): `rename OldName NewName --type method --preview`
+3. Apply: `rename OldName NewName --type method`
+4. Verify: `diagnostics --severity error`
+
+### Understand Unknown Code
+1. What is it? `find-definition ClassName --type class`
+2. What can it do? `list-members ClassName`
+3. How does it fit? `inheritance-tree ClassName`
+4. What does it need? `dependencies ClassName`
 
 ## Output Formats
 
-### JSON (Default)
+- `json` (default) - Machine-readable
+- `text` - Human-readable terminal
+- `markdown` - Documentation format
 
-Machine-readable, ideal for automation:
+## Requirements
 
-```bash
-./scripts/CSharpExpertCli -s MySolution.sln -o json find-definition UserService --type class
-```
+- [.NET 10.0 runtime](https://dotnet.microsoft.com/download/dotnet/10.0)
+- Valid .sln or .csproj file
+- Solution must compile
 
-```json
-{
-  "symbol": "UserService",
-  "kind": "class",
-  "location": {
-    "file": "src/Services/UserService.cs",
-    "line": 15,
-    "column": 18
-  }
-}
-```
+## Exit Codes
 
-### Text
+- `0` Success | `1` Error | `2` Not found
 
-Human-readable, good for terminal output:
+## Detailed References
 
-```bash
-./scripts/CSharpExpertCli -s MySolution.sln -o text find-definition UserService --type class
-```
-
-```
-Symbol: UserService
-Kind: class
-Location: src/Services/UserService.cs:15:18
-Namespace: MyApp.Services
-```
-
-### Markdown
-
-Formatted for documentation:
-
-```bash
-./scripts/CSharpExpertCli -s MySolution.sln -o markdown find-definition UserService --type class
-```
-
-## Troubleshooting
-
-**Error: "Solution file not found"**
-- Verify the path to your .sln file is correct
-- Use absolute paths if relative paths aren't working
-
-**Error: "Symbol not found"**
-- Check the symbol name spelling
-- Verify the symbol type matches (class vs. method)
-- Try searching without namespace filter first
-
-**Error: ".NET runtime not found"**
-- Ensure .NET 10.0 runtime is installed: `dotnet --version`
-- Download from: https://dotnet.microsoft.com/download
-
-**Compilation errors in diagnostics**
-- The tool requires the solution to compile successfully
-- Fix compilation errors in your IDE first
-- Tool uses the same Roslyn compiler as Visual Studio/Rider
-
-## Additional Resources
-
-For complete command reference, see [references/COMMANDS.md](references/COMMANDS.md)
-
-For detailed workflows and best practices, see [references/WORKFLOWS.md](references/WORKFLOWS.md)
-
-For technical architecture details, see [references/ARCHITECTURE.md](references/ARCHITECTURE.md)
-
-For real-world examples, see [references/EXAMPLES.md](references/EXAMPLES.md)
+- [COMMANDS.md](references/COMMANDS.md) - Full command reference
+- [WORKFLOWS.md](references/WORKFLOWS.md) - Step-by-step workflows
+- [EXAMPLES.md](references/EXAMPLES.md) - Real-world scenarios
