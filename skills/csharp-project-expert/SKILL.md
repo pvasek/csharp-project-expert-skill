@@ -1,6 +1,6 @@
 ---
 name: csharp-project-expert
-description: ALWAYS use for ANY C# operation: renaming (files/classes/methods/properties/namespaces), finding references/usages ("where is X used"), finding definitions ("where is X defined"), understanding code structure (hierarchies/dependencies/relationships). Roslyn-powered semantic analysis ensures all references are updated correctly across the entire solution.
+description: 'ALWAYS use for ANY C# operation: renaming (files/classes/methods/properties/namespaces), finding references/usages ("where is X used"), finding definitions ("where is X defined"), understanding code structure (hierarchies/dependencies/relationships). Roslyn-powered semantic analysis ensures all references are updated correctly across the entire solution.'
 ---
 
 # C# Project Expert
